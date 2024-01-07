@@ -67,9 +67,9 @@ try {
       phone: this.phone,
       avatar: this.avatar,
     },
-    process.env.REFRESH_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
   );
 } catch (error) {
@@ -87,7 +87,7 @@ try {
     {
       id: this._id,
     },
-    process.env.ACCESS_TOKEN_EXPIRY,
+    process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
   );
 } catch (error) {

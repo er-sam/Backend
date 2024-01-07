@@ -1,5 +1,6 @@
-import { ApiError } from "../Utils/apiErr";
-import { asyncHandler } from "../Utils/asyncHandler";
+import { User } from "../Model/User.modal.js";
+import { ApiError } from "../Utils/apiErr.js";
+import { asyncHandler } from "../Utils/asyncHandler.js";
 import jwt from 'jsonwebtoken'
 
 const verifiedUser=asyncHandler(async(req,res,next)=>{
@@ -8,8 +9,10 @@ try {
     if(!token){
         return res.status(401).send(new ApiError(401,"Unauthorize access"));
     }
-    const decode = await jwt.verify(data,process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findById(decode._id).select("-password -refreshToken");
+    // console.log("token",token);
+    const decode = await jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
+    // console.log("decode",decode);
+    const user = await User.findById(decode.id).select("-password -refreshToken");
     if(!user){
         throw new ApiError(401,"Invalid acccess token......");
     }

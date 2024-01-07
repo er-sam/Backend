@@ -2,6 +2,7 @@ import { User } from "../Model/User.modal.js";
 import { ApiError } from "../Utils/apiErr.js";
 import { ApiResponse } from "../Utils/apiRes.js";
 import { asyncHandler } from "../Utils/asyncHandler.js";
+import { uploadFileOnCloud } from "../Utils/cloudanary.js";
 
 //GENEREATE TOKENS
 const generateAccessAndRefreshTokens = async (user_id) => {
@@ -10,7 +11,7 @@ const generateAccessAndRefreshTokens = async (user_id) => {
     const user = await User.findById(user_id);
     const accesToken = await user.genAccessToken();
     const refToken = await user.genRefreshToken();
-    console.log(accesToken, refToken);
+    // console.log(accesToken, refToken);
     user.refreshToken = refToken;
     await user.save({ validateBeforeSave: false });
 
@@ -23,35 +24,40 @@ const generateAccessAndRefreshTokens = async (user_id) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   try {
-    console.log("object", req.body);
     const { name, email, phone, password, avatar, address } = req.body;
     if (!name || !email || !phone || !password || !address) {
       throw new ApiError(400, "Invalid Inputs");
-      // return res.status(401).send(new ApiResponse(401,"Invalid Inputs"))
     }
-    const existedUser = await User.findOne({ email });
-    if (existedUser) {
-      return res
-        .status(401)
-        .send(new ApiError(401, "User is already register"));
-      //    throw new ApiError(401,"User is already register");
+    if (await User.findOne({ email })) {
+      new ApiError(401, "User is already register")
     }
-
+    const avtarimgPath = req.file?.path;
+    if (!avtarimgPath) {
+      throw new ApiError(401, "Avatar image not found");
+    }
+    const avatarimg = await uploadFileOnCloud(avtarimgPath);
+    if(!avatarimg.url){
+      throw new ApiError(401,"Error in uploading avatar...");
+    }
     const user = await new User({
       name: name,
       email: email,
       phone: phone,
       password: password,
-      avatar: "cfgvbhjnkm",
+      avatar: avatarimg?.url,
       address: address,
     }).save({ new: true });
 
     return res.status(201).send(new ApiResponse(200, user, "User created.."));
   } catch (error) {
     console.log("reg", error);
-    return new ApiResponse(500, "Internal Server Error");
+    return res.status(500).send(new ApiError(401,error,"Internal Error"))
   }
 });
+
+
+
+
 
 const loginController = asyncHandler(async (req, res) => {
   //if(await(await User.findOne({email})).validatePassword(password))
