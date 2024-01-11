@@ -23,9 +23,8 @@ const generateAccessAndRefreshTokens = async (user_id) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  try {
     const { name, email, phone, password, avatar, address } = req.body;
-    if (!name || !email || !phone || !password || !address) {
+    if (!name || !email || !phone || !password) {
       throw new ApiError(400, "Invalid Inputs");
     }
     if (await User.findOne({ email })) {
@@ -45,14 +44,14 @@ const registerUser = asyncHandler(async (req, res) => {
       phone: phone,
       password: password,
       avatar: avatarimg?.url,
-      address: address,
+      address: ""
     }).save({ new: true });
 
     return res.status(201).send(new ApiResponse(200, user, "User created.."));
-  } catch (error) {
-    console.log("reg", error);
-    return res.status(500).send(new ApiError(401,error,"Internal Error"))
-  }
+  // } catch (error) {
+  //   console.log("reg", error);
+  //  throw new ApiError(500,error.Error);
+  // }
 });
 
 
